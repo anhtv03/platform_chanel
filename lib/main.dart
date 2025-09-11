@@ -1,10 +1,11 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(home: DemoPage(), debugShowCheckedModeBanner: false);
@@ -90,6 +91,7 @@ class DemoPageState extends State<DemoPage> {
                 child: Column(
                   children: [
                     Text("Ứng dụng đã cài đặt", style: TextStyle(fontSize: 20)),
+                    Spacer(),
                   ],
                 ),
               ),
