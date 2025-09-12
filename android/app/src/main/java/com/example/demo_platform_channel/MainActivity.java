@@ -163,7 +163,7 @@ public class MainActivity extends FlutterActivity {
             }
             getWindow().setAttributes(layoutParams);
         } catch (Exception e) {
-            throw new Exception("Không thể thay đổi độ sáng: " + e.getMessage());
+            throw new Exception("Cannot change brightness: " + e.getMessage());
         }
     }
 
@@ -184,7 +184,7 @@ public class MainActivity extends FlutterActivity {
             volume = Math.max(0, Math.min(maxVolume, volume));
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
         } catch (Exception e) {
-            throw new Exception("Không thể thay đổi âm lượng: " + e.getMessage());
+            throw new Exception("Cannot change volume: " + e.getMessage());
         }
     }
 

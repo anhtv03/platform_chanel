@@ -244,14 +244,14 @@ class DemoPageState extends State<DemoPage> {
     );
   }
 
-  //=======================handle logic=======================
+  //==========handle logic========================
   Future<void> _getBatteryLevel() async {
     String batteryLevel;
     try {
       final int result = await platform.invokeMethod('getBatteryLevel');
       batteryLevel = '$result% PIN';
     } on PlatformException catch (e) {
-      batteryLevel = "Lỗi khi lấy thông tin pin: '${e.message}'.";
+      batteryLevel = "Error getting battery information: '${e.message}'.";
     }
     setState(() {
       _batteryLevel = batteryLevel;
@@ -264,7 +264,7 @@ class DemoPageState extends State<DemoPage> {
       final String result = await platform.invokeMethod('getDeviceInfo');
       deviceInfo = result;
     } on PlatformException catch (e) {
-      deviceInfo = "Lỗi khi lấy thông tin thiết bị: '${e.message}'.";
+      deviceInfo = "Error getting device information: '${e.message}'.";
     }
     setState(() {
       _deviceInfo = deviceInfo;
@@ -280,7 +280,7 @@ class DemoPageState extends State<DemoPage> {
         _screenBrightness = '${percentage.round()}%';
       });
     } on PlatformException catch (e) {
-      print("Lỗi khi lấy độ sáng: ${e.message}");
+      print("Error getting brightness: ${e.message}");
     }
   }
 
@@ -292,7 +292,7 @@ class DemoPageState extends State<DemoPage> {
       });
       await _getScreenBrightness();
     } on PlatformException catch (e) {
-      print("Lỗi khi thay đổi độ sáng: ${e.message}");
+      print("Error changing brightness: ${e.message}");
       _getScreenBrightness();
     }
   }
@@ -308,7 +308,7 @@ class DemoPageState extends State<DemoPage> {
         _maxVolume = maxVolume;
       });
     } on PlatformException catch (e) {
-      print("Lỗi khi lấy âm lượng: ${e.message}");
+      print("Error getting volume: ${e.message}");
     }
   }
 
@@ -318,7 +318,7 @@ class DemoPageState extends State<DemoPage> {
       await platform.invokeMethod('setVolumeLevel', {'volume': volumeValue});
       await _getVolumeLevel();
     } on PlatformException catch (e) {
-      print("Lỗi khi thay đổi âm lượng: ${e.message}");
+      print("Error changing volume: ${e.message}");
       _getVolumeLevel();
     }
   }
@@ -335,7 +335,7 @@ class DemoPageState extends State<DemoPage> {
             }).toList();
       });
     } on PlatformException catch (e) {
-      print("Lỗi khi lấy danh sách ứng dụng: ${e.message}");
+      print("Error getting application list: ${e.message}");
     }
   }
 
@@ -345,7 +345,7 @@ class DemoPageState extends State<DemoPage> {
         'packageName': packageName,
       });
     } on PlatformException catch (e) {
-      print("Lỗi khi mở ứng dụng: ${e.message}");
+      print("Error opening app: ${e.message}");
     }
   }
 }
