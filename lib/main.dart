@@ -28,6 +28,7 @@ class DemoPageState extends State<DemoPage> {
   double _brightnessValue = 0.0;
   double _volumeValue = 0.0;
   int _maxVolume = 100;
+  List<Map<String, dynamic>> _launcherApps = [];
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class DemoPageState extends State<DemoPage> {
     _getDeviceInfo();
     _getScreenBrightness();
     _getVolumeLevel();
+    _getLauncherApps();
   }
 
   @override
@@ -117,7 +119,7 @@ class DemoPageState extends State<DemoPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
+                    color: Colors.grey[200],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,14 +128,8 @@ class DemoPageState extends State<DemoPage> {
                         "Ứng dụng đã cài đặt",
                         style: TextStyle(fontSize: 20),
                       ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            "Danh sách ứng dụng sẽ hiển thị ở đây",
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                        ),
-                      ),
+                      SizedBox(height: 10),
+                      Expanded(child: _buildAppInfoField()),
                     ],
                   ),
                 ),
@@ -200,18 +196,51 @@ class DemoPageState extends State<DemoPage> {
     );
   }
 
-  Widget _buildAppInfoField(String title, String name) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Text(title, style: TextStyle(fontSize: 20)),
-            Spacer(),
-            Text(name, style: TextStyle(fontSize: 20)),
-          ],
-        ),
-        const SizedBox(height: 20),
-      ],
+  Widget _buildAppInfoField() {
+    return ListView.builder(
+      itemCount: _launcherApps.length,
+      itemBuilder: (context, index) {
+        final app = _launcherApps[index];
+        int totalMinutes = app['usageTime'] as int;
+        int hours = totalMinutes ~/ 60;
+        int minutes = totalMinutes % 60;
+        String usageTime = '';
+        if (hours > 0) {
+          usageTime = '$hours' + 'h';
+          if (minutes > 0) {
+            usageTime += ' ' + '$minutes' + 'm';
+          }
+        } else {
+          usageTime = '$minutes' + 'm';
+        }
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.white),
+          child: ListTile(
+            leading:
+                _launcherApps[index]['icon'] != null
+                    ? Image.memory(
+                      _launcherApps[index]['icon'] as Uint8List,
+                      cacheWidth: 48,
+                      cacheHeight: 48,
+                    )
+                    : Icon(Icons.android),
+            title: Text(
+              app['appName'] as String,
+              style: TextStyle(fontSize: 16),
+            ),
+            trailing: Text(
+              usageTime,
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            onTap: () {
+              _launchApp(app['packageName'] as String);
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -291,6 +320,32 @@ class DemoPageState extends State<DemoPage> {
     } on PlatformException catch (e) {
       print("Lỗi khi thay đổi âm lượng: ${e.message}");
       _getVolumeLevel();
+    }
+  }
+
+  Future<void> _getLauncherApps() async {
+    try {
+      final List<dynamic> result = await platform.invokeMethod(
+        'getLauncherApps',
+      );
+      setState(() {
+        _launcherApps =
+            result.map((dynamic item) {
+              return (item as Map).cast<String, dynamic>();
+            }).toList();
+      });
+    } on PlatformException catch (e) {
+      print("Lỗi khi lấy danh sách ứng dụng: ${e.message}");
+    }
+  }
+
+  Future<void> _launchApp(String packageName) async {
+    try {
+      await platform.invokeMethod('openLaunchApp', {
+        'packageName': packageName,
+      });
+    } on PlatformException catch (e) {
+      print("Lỗi khi mở ứng dụng: ${e.message}");
     }
   }
 }
