@@ -44,7 +44,7 @@ class DemoPageState extends State<DemoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlue[300],
+        backgroundColor: Colors.lightBlue[200],
         title: Container(
           alignment: Alignment.center,
           child: Text(
@@ -61,7 +61,7 @@ class DemoPageState extends State<DemoPage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.lightBlue[300]!, Colors.white],
+            colors: [Colors.lightBlue[200]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -179,7 +179,7 @@ class DemoPageState extends State<DemoPage> {
           width: double.infinity,
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.lightBlue[600],
+              activeTrackColor: Colors.lightBlue[500],
               thumbColor: Colors.lightBlue[100],
               trackHeight: 2,
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
