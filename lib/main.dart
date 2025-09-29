@@ -20,7 +20,7 @@ class DemoPage extends StatefulWidget {
 }
 
 class DemoPageState extends State<DemoPage> {
-  static const platform = MethodChannel('com.example.platformchannel/info');
+  static const platform = MethodChannel('com.example.insight/info');
   String _batteryLevel = 'Chưa có thông tin pin.';
   String _deviceInfo = 'Chưa có thông tin thiết bị.';
   String _screenBrightness = 'Chưa có thông tin độ sáng.';
@@ -206,12 +206,12 @@ class DemoPageState extends State<DemoPage> {
         int minutes = totalMinutes % 60;
         String usageTime = '';
         if (hours > 0) {
-          usageTime = '$hours' + 'h';
+          usageTime = '${hours}h';
           if (minutes > 0) {
-            usageTime += ' ' + '$minutes' + 'm';
+            usageTime += ' ${minutes}m';
           }
         } else {
-          usageTime = '$minutes' + 'm';
+          usageTime = '${minutes}m';
         }
 
         return Container(

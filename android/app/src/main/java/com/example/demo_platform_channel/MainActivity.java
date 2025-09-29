@@ -6,10 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Canvas;
-import android.graphics.drawable.AdaptiveIconDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.BatteryManager;
@@ -21,8 +18,6 @@ import java.io.ByteArrayOutputStream;
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +26,7 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
-    private static final String CHANNEL = "com.example.platformchannel/info";
+    private static final String CHANNEL = "com.example.insight/info";
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
@@ -129,7 +124,8 @@ public class MainActivity extends FlutterActivity {
     }
 
     private String getDeviceInfo() {
-        return Build.MODEL;
+        String deviceName = Settings.Global.getString(getContentResolver(), "device_name");
+        return (deviceName != null) ? deviceName : Build.MANUFACTURER + " " + Build.MODEL;
     }
 
     private int getScreenBrightness() {
@@ -228,13 +224,10 @@ public class MainActivity extends FlutterActivity {
             installedApps.add(appData);
         }
 
-        installedApps.sort(new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> a, Map<String, Object> b) {
-                long timeA = (long) a.get("usageTime");
-                long timeB = (long) b.get("usageTime");
-                return Long.compare(timeB, timeA);
-            }
+        installedApps.sort((a, b) -> {
+            long timeA = (long) a.get("usageTime");
+            long timeB = (long) b.get("usageTime");
+            return Long.compare(timeB, timeA);
         });
 
         return installedApps;
