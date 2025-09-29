@@ -1,10 +1,10 @@
 package com.example.demo_platform_channel;
+
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
-import android.content.ContextWrapper;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Canvas;
@@ -14,20 +14,18 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
 import android.view.WindowManager;
 import android.graphics.Bitmap;
 import java.io.ByteArrayOutputStream;
 import androidx.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -38,108 +36,96 @@ public class MainActivity extends FlutterActivity {
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
-        new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
-                .setMethodCallHandler(
-                        (call, result) -> {
-                            switch (call.method) {
-                                case "getBatteryLevel":
-                                    int batteryLevel = getBatteryLevel();
-                                    if (batteryLevel != -1) {
-                                        result.success(batteryLevel);
-                                    } else {
-                                        result.error("UNAVAILABLE", "Battery level not available.", null);
-                                    }
-                                    break;
-                                case "getDeviceInfo":
-                                    String deviceInfo = getDeviceInfo();
-                                    result.success(deviceInfo);
-                                    break;
-                                case "getScreenBrightness":
-                                    try {
-                                        int brightness = getScreenBrightness();
-                                        result.success(brightness);
-                                    } catch (Exception e) {
-                                        result.error("UNAVAILABLE", "Screen brightness not available: " + e.getMessage(), null);
-                                    }
-                                    break;
-                                case "setScreenBrightness":
-                                    try {
-                                        Integer brightnessValue = call.argument("brightness");
-                                        if (brightnessValue != null) {
-                                            setScreenBrightness(brightnessValue);
-                                            result.success("Brightness set successfully");
-                                        } else {
-                                            result.error("INVALID_ARGUMENT", "Brightness value is null", null);
-                                        }
-                                    } catch (Exception e) {
-                                        result.error("UNAVAILABLE", "Cannot set brightness: " + e.getMessage(), null);
-                                    }
-                                    break;
-                                case "getVolumeLevel":
-                                    try {
-                                        int volume = getVolumeLevel();
-                                        result.success(volume);
-                                    } catch (Exception e) {
-                                        result.error("UNAVAILABLE", "Volume level not available: " + e.getMessage(), null);
-                                    }
-                                    break;
-                                case "getMaxVolumeLevel":
-                                    try {
-                                        int maxVolume = getMaxVolumeLevel();
-                                        result.success(maxVolume);
-                                    } catch (Exception e) {
-                                        result.error("UNAVAILABLE", "Max volume level not available: " + e.getMessage(), null);
-                                    }
-                                case "setVolumeLevel":
-                                    try {
-                                        Integer volumeValue = call.argument("volume");
-                                        if (volumeValue != null) {
-                                            setVolumeLevel(volumeValue);
-                                            result.success("Volume set successfully");
-                                        } else {
-                                            result.error("INVALID_ARGUMENT", "Volume value is null", null);
-                                        }
-                                    } catch (Exception e) {
-                                        result.error("UNAVAILABLE", "Cannot set volume: " + e.getMessage(), null);
-                                    }
-                                    break;
-                                case "getLauncherApps":
-                                    if (checkUsageStatsPermission()) {
-                                        List<Map<String, Object>> apps = getLauncherApps();
-                                        result.success(apps);
-                                    } else {
-                                        requestUsageStatsPermission();
-                                        result.error("PERMISSION_DENIED", "Usage stats permission not granted.", null);
-                                    }
-                                    break;
-                                case "openLaunchApp":
-                                    String packageName = call.argument("packageName");
-                                    if (packageName != null) {
-                                        openLaunchApp(packageName, result);
-                                    } else {
-                                        result.error("INVALID_ARGUMENT", "Package name is null", null);
-                                    }
-                                    break;
-                                default:
-                                    result.notImplemented();
-                                    break;
-                            }
+        new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL).setMethodCallHandler((call, result) -> {
+            switch (call.method) {
+                case "getBatteryLevel":
+                    int batteryLevel = getBatteryLevel();
+                    if (batteryLevel != -1) {
+                        result.success(batteryLevel);
+                    } else {
+                        result.error("UNAVAILABLE", "Battery level not available.", null);
+                    }
+                    break;
+                case "getDeviceInfo":
+                    String deviceInfo = getDeviceInfo();
+                    result.success(deviceInfo);
+                    break;
+                case "getScreenBrightness":
+                    try {
+                        int brightness = getScreenBrightness();
+                        result.success(brightness);
+                    } catch (Exception e) {
+                        result.error("UNAVAILABLE", "Screen brightness not available: " + e.getMessage(), null);
+                    }
+                    break;
+                case "setScreenBrightness":
+                    try {
+                        Integer brightnessValue = call.argument("brightness");
+                        if (brightnessValue != null) {
+                            setScreenBrightness(brightnessValue);
+                            result.success("Brightness set successfully");
+                        } else {
+                            result.error("INVALID_ARGUMENT", "Brightness value is null", null);
                         }
-                );
+                    } catch (Exception e) {
+                        result.error("UNAVAILABLE", "Cannot set brightness: " + e.getMessage(), null);
+                    }
+                    break;
+                case "getVolumeLevel":
+                    try {
+                        int volume = getVolumeLevel();
+                        result.success(volume);
+                    } catch (Exception e) {
+                        result.error("UNAVAILABLE", "Volume level not available: " + e.getMessage(), null);
+                    }
+                    break;
+                case "getMaxVolumeLevel":
+                    try {
+                        int maxVolume = getMaxVolumeLevel();
+                        result.success(maxVolume);
+                    } catch (Exception e) {
+                        result.error("UNAVAILABLE", "Max volume level not available: " + e.getMessage(), null);
+                    }
+                case "setVolumeLevel":
+                    try {
+                        Integer volumeValue = call.argument("volume");
+                        if (volumeValue != null) {
+                            setVolumeLevel(volumeValue);
+                            result.success("Volume set successfully");
+                        } else {
+                            result.error("INVALID_ARGUMENT", "Volume value is null", null);
+                        }
+                    } catch (Exception e) {
+                        result.error("UNAVAILABLE", "Cannot set volume: " + e.getMessage(), null);
+                    }
+                    break;
+                case "getLauncherApps":
+                    if (checkUsageStatsPermission()) {
+                        List<Map<String, Object>> apps = getLauncherApps();
+                        result.success(apps);
+                    } else {
+                        requestUsageStatsPermission();
+                        result.error("PERMISSION_DENIED", "Usage stats permission not granted.", null);
+                    }
+                    break;
+                case "openLaunchApp":
+                    String packageName = call.argument("packageName");
+                    if (packageName != null) {
+                        openLaunchApp(packageName, result);
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Package name is null", null);
+                    }
+                    break;
+                default:
+                    result.notImplemented();
+                    break;
+            }
+        });
     }
 
     private int getBatteryLevel() {
-        int batteryLevel = -1;
-        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-            BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
-            return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        } else {
-            Intent intent = new ContextWrapper(getApplicationContext()).
-                    registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-            batteryLevel = (intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100) /
-                    intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        }
-        return batteryLevel;
+        BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+        return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
     }
 
     private String getDeviceInfo() {
@@ -158,9 +144,7 @@ public class MainActivity extends FlutterActivity {
         brightness = Math.max(0, Math.min(255, brightness));
         try {
             WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-            if (VERSION.SDK_INT >= VERSION_CODES.CUPCAKE) {
-                layoutParams.screenBrightness = brightness / 255.0f;
-            }
+            layoutParams.screenBrightness = brightness / 255.0f;
             getWindow().setAttributes(layoutParams);
         } catch (Exception e) {
             throw new Exception("Cannot change brightness: " + e.getMessage());
@@ -192,11 +176,8 @@ public class MainActivity extends FlutterActivity {
         UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -1);
-        List<UsageStats> usageStatsList = null;
-        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-            usageStatsList = usageStatsManager.queryUsageStats(
-                    UsageStatsManager.INTERVAL_DAILY, calendar.getTimeInMillis(), System.currentTimeMillis());
-        }
+
+        List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, calendar.getTimeInMillis(), System.currentTimeMillis());
         return !usageStatsList.isEmpty();
     }
 
@@ -206,11 +187,9 @@ public class MainActivity extends FlutterActivity {
     }
 
     private List<Map<String, Object>> getLauncherApps() {
-        List<Map<String, Object>> launcherApps = new ArrayList<>();
+        List<Map<String, Object>> installedApps = new ArrayList<>();
         PackageManager pm = getPackageManager();
-        Intent launcherIntent = new Intent(Intent.ACTION_MAIN, null);
-        launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(launcherIntent, 0);
+        List<ApplicationInfo> appInfos = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
         UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         Calendar calendar = Calendar.getInstance();
@@ -220,38 +199,25 @@ public class MainActivity extends FlutterActivity {
         long startTime = calendar.getTimeInMillis();
         long endTime = System.currentTimeMillis();
 
-        for (ResolveInfo info : resolveInfos) {
-            String packageName = info.activityInfo.packageName;
-            String appName = info.loadLabel(pm).toString();
-            Drawable iconDrawable = info.loadIcon(pm);
+        Map<String, Long> usageMap = new HashMap<>();
+        Map<String, UsageStats> aggregatedStats = usageStatsManager.queryAndAggregateUsageStats(startTime, endTime);
+        for (Map.Entry<String, UsageStats> entry : aggregatedStats.entrySet()) {
+            usageMap.put(entry.getKey(), entry.getValue().getTotalTimeInForeground());
+        }
 
-            Bitmap bitmap;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && iconDrawable instanceof AdaptiveIconDrawable) {
-                Drawable backgroundDr = ((AdaptiveIconDrawable) iconDrawable).getBackground();
-                Drawable foregroundDr = ((AdaptiveIconDrawable) iconDrawable).getForeground();
-                Drawable[] layers = new Drawable[]{backgroundDr, foregroundDr};
-                bitmap = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                for (Drawable layer : layers) {
-                    if (layer != null) {
-                        layer.setBounds(0, 0, 108, 108);
-                        layer.draw(canvas);
-                    }
-                }
-            } else {
-                bitmap = ((BitmapDrawable) iconDrawable).getBitmap();
+        for (ApplicationInfo info : appInfos) {
+            if ((info.flags & ApplicationInfo.FLAG_SYSTEM) != 0 &&
+                    (info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0) {
+                continue;
             }
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] iconBytes = stream.toByteArray();
+            String packageName = info.packageName;
+            String appName = pm.getApplicationLabel(info).toString();
+            Drawable iconDrawable = pm.getApplicationIcon(info);
 
-            UsageStats usageStats = null;
-            long usageTimeMillis = 0;
-            if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-                usageStats = usageStatsManager.queryAndAggregateUsageStats(startTime, endTime).get(packageName);
-                usageTimeMillis = (usageStats != null) ? usageStats.getTotalTimeInForeground() : 0;
-            }
+            byte[] iconBytes = drawableToByteArray(iconDrawable);
+
+            long usageTimeMillis = usageMap.getOrDefault(packageName, 0L);
             long usageTimeMinutes = usageTimeMillis / (1000 * 60);
 
             Map<String, Object> appData = new HashMap<>();
@@ -259,9 +225,34 @@ public class MainActivity extends FlutterActivity {
             appData.put("appName", appName);
             appData.put("usageTime", usageTimeMinutes);
             appData.put("icon", iconBytes);
-            launcherApps.add(appData);
+            installedApps.add(appData);
         }
-        return launcherApps;
+
+        installedApps.sort(new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> a, Map<String, Object> b) {
+                long timeA = (long) a.get("usageTime");
+                long timeB = (long) b.get("usageTime");
+                return Long.compare(timeB, timeA);
+            }
+        });
+
+        return installedApps;
+    }
+
+    private byte[] drawableToByteArray(Drawable drawable) {
+        if (drawable == null) return new byte[0];
+
+        int width = Math.max(drawable.getIntrinsicWidth(), 108);
+        int height = Math.max(drawable.getIntrinsicHeight(), 108);
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
     }
 
     private void openLaunchApp(String packageName, MethodChannel.Result result) {

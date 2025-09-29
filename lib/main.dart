@@ -236,7 +236,7 @@ class DemoPageState extends State<DemoPage> {
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
             onTap: () {
-              _launchApp(app['packageName'] as String);
+              _openLaunchApp(app['packageName'] as String);
             },
           ),
         );
@@ -339,7 +339,7 @@ class DemoPageState extends State<DemoPage> {
     }
   }
 
-  Future<void> _launchApp(String packageName) async {
+  Future<void> _openLaunchApp(String packageName) async {
     try {
       await platform.invokeMethod('openLaunchApp', {
         'packageName': packageName,
