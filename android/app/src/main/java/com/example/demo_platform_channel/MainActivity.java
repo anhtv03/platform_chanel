@@ -9,18 +9,22 @@ import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
-import android.view.WindowManager;
 import android.graphics.Bitmap;
+
 import java.io.ByteArrayOutputStream;
+
 import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -136,14 +140,14 @@ public class MainActivity extends FlutterActivity {
         }
     }
 
-    private void setScreenBrightness(int brightness) throws Exception {
+    private void setScreenBrightness(int brightness) {
         brightness = Math.max(0, Math.min(255, brightness));
-        try {
-            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-            layoutParams.screenBrightness = brightness / 255.0f;
-            getWindow().setAttributes(layoutParams);
-        } catch (Exception e) {
-            throw new Exception("Cannot change brightness: " + e.getMessage());
+        if (!Settings.System.canWrite(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, 1001);
+        } else {
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, brightness);
         }
     }
 
@@ -202,8 +206,7 @@ public class MainActivity extends FlutterActivity {
         }
 
         for (ApplicationInfo info : appInfos) {
-            if ((info.flags & ApplicationInfo.FLAG_SYSTEM) != 0 &&
-                    (info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0) {
+            if ((info.flags & ApplicationInfo.FLAG_SYSTEM) != 0 && (info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0) {
                 continue;
             }
 
